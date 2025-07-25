@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 const CHAR_WIDTH = 8;
 const CHAR_HEIGHT = 16;
-const TIME_STRING_LENGTH = 8; // "HH:MM XM"
 
 function generateRandomChar() {
 	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
@@ -12,6 +11,8 @@ function generateRandomChar() {
 function App() {
 	const canvasRef = useRef(null);
 	const [timeCharPositions, setTimeCharPositions] = useState(new Set());
+	const [use12Hour, setUse12Hour] = useState(true);
+	const TIME_STRING_LENGTH = use12Hour ? 8 : 5;
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -34,10 +35,10 @@ function App() {
 
 		const now = new Date();
 		const hours = now.getHours();
-		const hours12 = hours % 12 || 12;
-		const ampm = hours >= 12 ? 'AM' : 'PM';
 		const minutes = now.getMinutes().toString().padStart(2, '0');
-		const timeString = `${hours12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+		const timeString = use12Hour
+			? `${(hours % 12 || 12).toString().padStart(2, '0')}:${minutes} ${hours >= 12 ? 'PM' : 'AM'}`
+			: `${hours.toString().padStart(2, '0')}:${minutes}`;
 
 		const positions = [];
 
@@ -86,7 +87,7 @@ function App() {
 		const handleResize = () => window.location.reload();
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
-	}, []);
+	}, [use12Hour]);
 
 	useEffect(() => {
 		let animationFrameId;
@@ -129,10 +130,28 @@ function App() {
 	}, [timeCharPositions]);
 
 	return (
-		<canvas
-			ref={canvasRef}
-			style={{ display: 'block', width: '100vw', height: '100vh' }}
-		/>
+		<>
+			<button
+				onClick={() => setUse12Hour(!use12Hour)}
+				style={{
+					position: 'absolute',
+					top: '1rem',
+					left: '1rem',
+					zIndex: 10,
+					background: 'transparent',
+					color: '#37ff00',
+					padding: '0.5rem 1rem',
+					border: '1px solid #37ff00',
+					cursor: 'pointer',
+					fontFamily: 'monospace',
+				}}>
+				{use12Hour ? '12h' : '24h'}
+			</button>
+			<canvas
+				ref={canvasRef}
+				style={{ display: 'block', width: '100vw', height: '100vh' }}
+			/>
+		</>
 	);
 }
 
