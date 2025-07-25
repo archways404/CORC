@@ -12,9 +12,27 @@ function App() {
 	const canvasRef = useRef(null);
 	const [timeCharPositions, setTimeCharPositions] = useState(new Set());
 	const [use12Hour, setUse12Hour] = useState(true);
+	const [timeString, setTimeString] = useState('');
 	const TIME_STRING_LENGTH = use12Hour ? 8 : 5;
 
 	useEffect(() => {
+		function getFormattedTime() {
+			const now = new Date();
+			const hours = now.getHours();
+			const minutes = now.getMinutes().toString().padStart(2, '0');
+			return use12Hour
+				? `${(hours % 12 || 12).toString().padStart(2, '0')}:${minutes} ${hours >= 12 ? 'PM' : 'AM'}`
+				: `${hours.toString().padStart(2, '0')}:${minutes}`;
+		}
+		setTimeString(getFormattedTime());
+		const interval = setInterval(() => {
+			setTimeString(getFormattedTime());
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [use12Hour]);
+
+	useEffect(() => {
+		if (!timeString) return;
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext('2d');
 		const width = window.innerWidth;
@@ -32,13 +50,6 @@ function App() {
 		const startColBig =
 			Math.floor(cols / 2) -
 			Math.floor(((bigCharWidth * pixelSize + charSpacing) * TIME_STRING_LENGTH) / 2);
-
-		const now = new Date();
-		const hours = now.getHours();
-		const minutes = now.getMinutes().toString().padStart(2, '0');
-		const timeString = use12Hour
-			? `${(hours % 12 || 12).toString().padStart(2, '0')}:${minutes} ${hours >= 12 ? 'PM' : 'AM'}`
-			: `${hours.toString().padStart(2, '0')}:${minutes}`;
 
 		const positions = [];
 
@@ -87,7 +98,7 @@ function App() {
 		const handleResize = () => window.location.reload();
 		window.addEventListener('resize', handleResize);
 		return () => window.removeEventListener('resize', handleResize);
-	}, [use12Hour]);
+	}, [timeString, use12Hour]);
 
 	useEffect(() => {
 		let animationFrameId;
