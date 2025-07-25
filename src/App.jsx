@@ -26,7 +26,7 @@ function App() {
 
 		const interval = setInterval(() => {
 			setCharGrid(generateGrid());
-		}, 10); // 100ms = 0.1s
+		}, 10); // 10ms
 
 		return () => clearInterval(interval); // Cleanup on unmount
 	}, []);
